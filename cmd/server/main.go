@@ -16,7 +16,8 @@ func main() {
 	db := config.DB
 	userRepository := repository.NewUserRepositoryImpl(db)
 	userService := service.NewUserServiceImpl(userRepository)
-	userController := controller.NewUserControllerImpl(userService)
+	authService := service.NewJwtService()
+	userController := controller.NewUserControllerImpl(userService, authService)
 
 	routerEngine := gin.Default()
 	router.SetupRouter(routerEngine, userController)

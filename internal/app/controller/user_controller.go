@@ -15,6 +15,7 @@ type UserController interface {
 }
 type UserControllerImpl struct {
 	userService service.UserService
+	jwtService  service.JwtService
 }
 
 func (controller *UserControllerImpl) Register(ctx *gin.Context) {
@@ -26,10 +27,13 @@ func (controller *UserControllerImpl) Register(ctx *gin.Context) {
 	}
 	user, err := controller.userService.Register(request)
 	if err != nil {
-		util.ErrorResponse(ctx, http.StatusUnprocessableEntity, "The registration data format is invalid.", err.Error())
+		util.ErrorResponse(ctx, http.StatusUnprocessableEntity, "the registration data format is invalid.", err.Error())
 		return
 	}
-	token := "Contoh Token"
+	token, err := controller.jwtService.GenerateToken(user.Id)
+	if err != nil {
+		util.ErrorResponse(ctx, http.StatusUnprocessableEntity, "the token data format is invalid.", err.Error())
+	}
 	response := dto.ToUserRegisterResponse(user, token)
 	util.SuccessResponse(ctx, http.StatusCreated, "cashier account has been successfully created.", response)
 }
@@ -46,12 +50,16 @@ func (controller *UserControllerImpl) Login(ctx *gin.Context) {
 		util.ErrorResponse(ctx, http.StatusUnprocessableEntity, "The login data format is invalid.", err.Error())
 		return
 	}
-	token := "Contoh Token"
+	token, err := controller.jwtService.GenerateToken(login.Id)
+	if err != nil {
+		util.ErrorResponse(ctx, http.StatusUnprocessableEntity, "the token data format is invalid.", err.Error())
+		return
+	}
 	response := dto.ToUserLoginResponse(login, token)
 	util.SuccessResponse(ctx, http.StatusCreated, "login successful. welcome back!", response)
 
 }
 
-func NewUserControllerImpl(userService service.UserService) UserController {
-	return &UserControllerImpl{userService: userService}
+func NewUserControllerImpl(userService service.UserService, jwtService service.JwtService) UserController {
+	return &UserControllerImpl{userService: userService, jwtService: jwtService}
 }
