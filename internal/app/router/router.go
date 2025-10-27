@@ -15,6 +15,6 @@ func SetupRouter(
 		api.POST("/login", userController.Login)
 	}
 	router.NoRoute(func(c *gin.Context) {
-		c.JSON(404, gin.H{"success": false, "message": "Endpoint tidak ditemukan"})
+		c.JSON(404, gin.H{"success": false, "message": "Endpoint not found"})
 	})
 }
